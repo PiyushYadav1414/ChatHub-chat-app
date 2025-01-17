@@ -35,7 +35,8 @@ const ChatContainer = () => {
     return () => unsubscribeFromMessages();
   }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
-  // Scroll to the latest message whenever the messages array changes
+
+// Whenever there is new message run this useEffect and Scroll to the latest message whenever the messages array changes
   useEffect(() => {
     if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" }); // Smooth scroll to the latest message

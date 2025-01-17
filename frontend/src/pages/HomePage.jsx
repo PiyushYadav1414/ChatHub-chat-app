@@ -1,6 +1,6 @@
 // Importing the chat store and necessary components
 import { useChatStore } from "../store/useChatStore"; // Access chat-related state and functions
-import Sidebar from "../components/Sidebar"; // Sidebar component to display the list of users
+import Sidebar from '../components/SideBar'; // Sidebar component to display the list of users
 import NoChatSelected from "../components/NoChatSelected"; // Component shown when no chat is selected
 import ChatContainer from "../components/ChatContainer"; // Main chat UI for messages
 
