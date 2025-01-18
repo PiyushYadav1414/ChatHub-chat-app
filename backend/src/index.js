@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === "production") {
     });
   }
 
-
+// Attach the HTTP Server to Express
 server.listen(PORT, () => {  // Starting the server and listening on the specified port
     console.log(`Server is listening at http://localhost:${PORT}`); // Log a message when the server starts
     connectDB();  // Connect to MongoDB using the connection URI from .env

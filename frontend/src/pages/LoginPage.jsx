@@ -21,7 +21,7 @@ const LoginPage = () => {
   // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default browser behavior of form submission
-    login(formData); // Call the login function with the form data (email and password)
+    login(formData); // Call the login function from userAuthStore to submit form data (email and password)
   };
 
   return (

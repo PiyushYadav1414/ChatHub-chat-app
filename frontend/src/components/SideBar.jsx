@@ -4,11 +4,23 @@ import { useAuthStore } from "../store/useAuthStore"; // Access authentication-r
 import SidebarSkeleton from "./skeletons/SidebarSkeleton"; // Placeholder component displayed while the users list is loading
 import { Users } from "lucide-react"; // Icon for the "Users" section
 
+// In Sidebar.jsx:
+// - Display a list of users on the left-hand side (LHS) as rectangular boxes (like buttons).
+// - Call the `getUsers` function from `useChatStore.jsx` to get a list of all users.
+// - Map through the list of users to display their details in the UI.
+// - When a user clicks on a user from the list to chat,then the user is selected  to chat.
+// - The selected user is set by calling `setSelectedUser(user)`, which stores the selected user in the state.
+// - Once a user is selected, we can fetch and display the chat history with that user.
+
 const Sidebar = () => {
   // Destructure necessary states and functions from the chat store
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
+// getUsers is a function which retrieves all the user from database and it put into users which is an Array of object
+// selected user is that user whome we have clicked or are chatting with end-to-end and setSelectedUser function
+// is use to set that selectedUser when we click and isUsersLoading show loader till the data is not fetched from database
 
-  // Destructure online users from the auth store
+
+  // Destructure online users from the auth store and we have got it using socket.io
   const { onlineUsers } = useAuthStore();
 
   // Local state to control whether to show only online users or not

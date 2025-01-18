@@ -14,9 +14,11 @@ const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001
 
 // Create a Zustand store to manage authentication-related data and app states
 export const useAuthStore = create((set,get) => ({
-    // Store for managing chat-related data and actions
-    // All the variables and functions below are part of the store's state.
-    // Zustand provides a built-in `set` function to update the state in the store dynamically.
+// Store for managing chat-related data and actions
+// All the variables and functions below are part of the store's state.
+// Zustand provides a built-in `set` function to update the state in the store dynamically.
+// It also provide built-in get functon to access latest value of both state and function
+//getState() is used outside the store to directly access the current state, and it’s a built-in method from Zustand.
 
     // Stores details of the currently authenticated user
     authUser: null, // Initially set to null (no user is logged in)
@@ -33,27 +35,6 @@ export const useAuthStore = create((set,get) => ({
 
 
     
-    // Function to check if the user is authenticated
-    checkAuth: async () => {
-        try {
-            // Send a GET request to the server to verify authentication
-            const res = await axiosInstance.get("/auth/check");
-            set({
-                authUser: res.data, // If successful, store the user data from the response to authUser
-            });
-
-            // Call the connectSocket function to establish a real-time connection
-            get().connectSocket();
-        } catch (error) {
-            console.error("Error in checkAuth:", error); // Log any errors
-            set({ authUser: null }); // If there’s an error, reset authUser and set its data to null
-        } finally {
-            set({ isCheckingAuth: false }); // Mark authentication check as complete (always runs) .It shows now app is not checking authentication
-        }
-    },
-
-
-
 
     signup: async (data) => {
         // Set isSigningUp to true to indicate that the signup process has started
@@ -98,7 +79,7 @@ export const useAuthStore = create((set,get) => ({
             toast.success("Logged in successfully");
 
             // Connect to the WebSocket or real-time service
-              get().connectSocket();
+              get().connectSocket(); // This function is defined below
         } catch (error) {
             // If there's an error during login, show an error message from the backend response
             toast.error(error.response.data.message);
@@ -109,6 +90,7 @@ completes then it will set isLoggingin to false indicating the process is comple
             set({ isLoggingIn: false });
         }
     },
+
 
     // Function to handle user logout
     logout: async () => {
@@ -127,6 +109,26 @@ completes then it will set isLoggingin to false indicating the process is comple
         } catch (error) {
             // If there's an error during logout, show an error message from the backend response
             toast.error(error.response.data.message);
+        }
+    },
+
+
+       // Function to check if the user is authenticated
+       checkAuth: async () => {
+        try {
+            // Send a GET request to the server to verify authentication
+            const res = await axiosInstance.get("/auth/check");
+            set({
+                authUser: res.data, // If successful, store the user data from the response to authUser
+            });
+
+            // Call the connectSocket function to establish a real-time connection
+            get().connectSocket();
+        } catch (error) {
+            console.error("Error in checkAuth:", error); // Log any errors
+            set({ authUser: null }); // If there’s an error, reset authUser and set its data to null
+        } finally {
+            set({ isCheckingAuth: false }); // Mark authentication check as complete (always runs) .It shows now app is not checking authentication
         }
     },
 
@@ -164,25 +166,29 @@ completes then it will set isLoggingin to false indicating the process is comple
     connectSocket: () => {
         const { authUser } = get(); // Get the latest value of authUser to check if the user is authenticated
 
-        // Check if the user is not authenticated or if a socket connection already exists and is active
-        // `?.connected` ensures we don't throw an error if `socket` is null
-        if (!authUser || get().socket?.connected) {
+// Check if the user is not authenticated or if a socket connection already exists and is active??.Secondly,
+// get().socket: Fetches the latest socket instance stored in the Zustand state..connected: Checks if the 
+// socket instance exists and whether it’s currently connected to the server???.
+        if (!authUser || get().socket?.connected) {// `?.connected` ensures we don't throw an error if `socket` is null
             return; // If the user is not logged in or already connected, exit the function
         }
-
-        // Create a new WebSocket connection to the server using the user's ID
-        const socket = io(BASE_URL, {
-            query: {
-                userId: authUser._id, // Send the authenticated user's ID as part of the connection query
-            },
+ 
+// Create a new WebSocket connection to the server using the user's ID. Below,socket is just a variable
+// But this variable holds a Socket.IO connection instance that allows you to interact with the server
+        const socket = io(BASE_URL, {query: {userId: authUser._id}, // Send the authenticated user's ID as part of the connection query
         });
 
-        socket.connect(); // Establish the connection with the server
+// This actually sends the request to via url BASE_URL to server and establishes the WebSocket connection.
+        socket.connect();
+
 
         set({ socket: socket }); // Save the socket instance to the Zustand store for future use
 
 // Listen for the "getOnlineUsers" event from the lib/socket.js and will recieves keys of userID as data
-// which contains a list of user IDs that are currently online
+// which contains a list of user IDs that are currently online. 
+// io.on("connection", (socket) => { ... }) : This is the event listener that waits for a client (frontend)
+// to connect.When a connection is made (via socket.connect()), this code runs.
+// socket.handshake.query.userId => handshake.query.userId allows us to access the userId that was sent from the frontend as a query parameter
         socket.on("getOnlineUsers", (userIds) => {
             set({ onlineUsers: userIds }); // Update the `onlineUsers` state with the list of online users
         });

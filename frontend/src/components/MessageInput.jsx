@@ -16,19 +16,31 @@ const MessageInput = () => {
   const fileInputRef = useRef(null); // Reference to file input element
   const { sendMessage } = useChatStore(); // Getting sendMessage function from chat store
 
+
+// 1. **File Selected:** User selects `example.jpg` in the file input.
+// 2. **Validation:**
+//    - If `example.jpg` is not an image (e.g., `example.pdf`), an error message is shown.
+//    - If it’s an image, proceed to the next step.
+// 3. **Preview Set:**
+//    - The file is converted to a base64 string like `data:image/jpeg;base64,...`.
+//    - This string is saved in `imagePreview` to show the image above the input field.
   // Function to handle image file selection
   const handleImageChange = (e) => {
-    const file = e.target.files[0]; // Get the selected file
-    if (!file.type.startsWith("image/")) {
+    const file = e.target.files[0]; // gets the first file selected by the user in the file input.
+    if (!file.type.startsWith("image/")) { // ensures the selected file is an image (e.g., .png, .jpg).
       toast.error("Please select an image file"); // Show error if the file is not an image
       return;
     }
 
+// A FileReader object is used to read the content of the file.It reads the file as a base64-encoded URL, 
+// which is useful for displaying the image directly in the browser without uploading it to a server.
     const reader = new FileReader(); // Create a new FileReader to read the image
-    reader.onloadend = () => {
-      setImagePreview(reader.result); // Set the image preview when file is loaded
-    };
-    reader.readAsDataURL(file); // Read the file as base64 URL
+    reader.readAsDataURL(file); // reader.readAsDataURL(file) starts the file reading process and converts it to a base64 string.
+    // onloadend is an event handler for the FileReader.It is like telling the FileReader:"When you finish reading the file, trigger this event and run the code inside."
+    reader.onloadend = () => {    // reader.onloadend runs when the file reading is complete.
+      // reader.result contains the base64 data of the image.
+        setImagePreview(reader.result); // Set the image preview when file is loaded
+      };
   };
 
   // Function to remove the image preview
@@ -45,11 +57,8 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return; // Don't send if no text or no image in input field 
 
     try {
-// Send the message (text and/or image) to the chat store which urther make http request to backend to send message
-      await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
-      });
+// Send the message (text and/or image) to the chat store which further make http request to backend to send message
+      await sendMessage({text: text.trim(),image: imagePreview,});
 
       // Clear the input fields after sending the message (resetting everthing for new input from user)
       setText(""); // Clear text input
@@ -97,15 +106,15 @@ const MessageInput = () => {
           />
     {/* Input to select image from our machine. Hidden file input for selecting image */}
           <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
+            type="file" // This is the file input element where the user can select an image from their device.
+            accept="image/*" // Ensures only image files can be selected.
+            className="hidden"  // Hides the input from the UI.
+            ref={fileInputRef} // Uses a reference (fileInputRef) to programmatically trigger the input when required.
             onChange={handleImageChange} // Trigger image change handler
           />
 
           {/* Button to open file input and select an image */}
-          <button
+          <button // This simulates a click on the hidden file input, allowing the user to select an image.
             type="button"
             className={`hidden sm:flex btn btn-circle
                      ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}

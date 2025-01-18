@@ -7,7 +7,8 @@ import { useAuthStore } from "./useAuthStore"; // Zustand store for authenticati
 export const useChatStore = create((set, get) => ({ 
  // Store for managing chat-related data and actions
 // All the variables and functions below are part of the store's state.
-// Zustand provides a built-in `set` function to update the state in the store dynamically.
+// Zustand provides a built-in `set` function to update the state adn function in the store dynamically.
+// getState() is used outside the store to directly access the current state, and it’s a built-in method from Zustand.
 
   messages: [], // Array to store messages in the chat
   users: [], // Array to store the list of users
@@ -68,7 +69,7 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-// Function to subscribe to real-time messages using WebSockets adn it will recieve real-time message from 
+// Function to subscribe to real-time messages using WebSockets and it will recieve real-time message from 
 // message.controller.js sent by sender(user). We will call below funcytion in ChatContainer.jsx as it 
 // display all the messages between sender and receiver adn we wil call it in useEffect so that it refreshes 
 // everytime whenever there is new message
@@ -76,7 +77,8 @@ export const useChatStore = create((set, get) => ({
     const { selectedUser } = get(); // Get the currently selected user to chat 
     if (!selectedUser) return; // Exit  if no user is selected to chat
 
-    const socket = useAuthStore.getState().socket;//Access the socket state from the authstore.js using getState()
+//getState() is used outside the store to directly access the current state, and it’s a built-in method from Zustand.
+    const socket = useAuthStore.getState().socket;//Access the socket state from the useAuthStore.js using getState()
 
     // Listen for newMessage  from the server auth.controller.js
     socket.on("newMessage", (newMessage) => {
@@ -90,13 +92,17 @@ export const useChatStore = create((set, get) => ({
     });
   },
 
+
   // Function to unsubscribe from real-time messages
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;//Access the socket state from the authstore.js using getState()
+// This means the app will stop listening for new messages from the server and won't trigger the newMessage handler anymore.
+// It does not disconnect the socket, it just removes the specific event listener for newMessage.
     socket.off("newMessage"); // Remove the "newMessage" listener to stop receiving updates
   },
 
+
   // Function to set the currently selected user for chatting like on whatsapp we click on any user and 
-  // his/her chat opens and we can further chat and can see message 
+  // his/her chat opens and we can further chat and can see message
   setSelectedUser: (selectedUser) => set({ selectedUser }), // Update the selected user in the state
 }));

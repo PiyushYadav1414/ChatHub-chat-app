@@ -19,19 +19,29 @@ const ChatContainer = () => {
   const messageEndRef = useRef(null); // Reference to scroll down to latest message so that we don't have top scroll again and again
 
 // Effect to fetch messages when a user selects another person to chat with
-// In Sidebar.jsx:
-// - Display a list of users on the left-hand side (LHS) as rectangular boxes (like buttons).
-// - Call the `getUsers` function from `useChatStore.jsx` to get a list of all users.
-// - Map through the list of users to display their details in the UI.
-// - When a user clicks on a user from the list to chat,then the user is selected  to chat.
-// - The selected user is set by calling `setSelectedUser(user)`, which stores the selected user in the state.
-// - Once a user is selected, we can fetch and display the chat history with that user.
-  useEffect(() => {
+// 1. When the component first loads (mounts), `useEffect` runs and checks the current state.
+// 2. When the user clicks on a different person to chat, the `selectedUser` changes. 
+//    This is because the `selectedUser` stores the user that you are chatting with, and when it changes, it updates to the new selected person.
+// 3. The `selectedUser._id` changes, which means we need to load the messages for the new user. This triggers the `getMessages(selectedUser._id)` function to fetch the chat history with that user.
+// 4. The `getMessages` function will update the `messages` array with the latest chat between the user and the selected person.
+// 5. The dependency array `[selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]` ensures that the `useEffect`:
+    // - Runs when `selectedUser._id` changes (i.e., when a new person is selected to chat).
+    // - Runs again when `getMessages` or the subscription functions (`subscribeToMessages`, `unsubscribeFromMessages`) change.
+    // This ensures the app fetches the latest messages for the newly selected user and subscribes to real-time updates.
+
+    // 6. `subscribeToMessages`:
+    //    - After selecting a new user, we call `subscribeToMessages()` to start receiving real-time messages for that user.
+    //    - This function listens for new messages sent to the selected user and automatically updates the chat UI when a new message is received.
+    
+    // 7. `unsubscribeFromMessages`:
+    //    - The cleanup function (`return () => unsubscribeFromMessages()`) is triggered when the component unmounts or when the selected user changes.
+    //    - It stops listening for messages from the previous user to avoid memory leaks and ensures that the app only receives messages for the current selected user.
+useEffect(() => {
 // Fetch messages for the selected user as selectedUser._id will give the id of another person which 
-    getMessages(selectedUser._id);  // user wants to chat
+    getMessages(selectedUser._id);  // user wants to chat (receiver id)
     subscribeToMessages(); // Subscribe to real-time updates for new messages
 
-// unsubscribeFromMessages: Clea n-up function to unsubscribe from messages when the component unmounts
+// unsubscribeFromMessages: Clean-up function to unsubscribe from messages when the component unmounts
     return () => unsubscribeFromMessages();
   }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
@@ -64,7 +74,7 @@ const ChatContainer = () => {
         {messages.map((message) => (
           <div
             key={message._id}
-// If we are the user then display my message at the (LHS) end if other person is sending message then dispaly message on start at (RHS)
+// If we are the user then display my message at the (LHS) end if other person is sending message then dispaly that message on start at (RHS)
             className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
             ref={messageEndRef} // Set ref to scroll to the latest message
           >
@@ -92,7 +102,7 @@ const ChatContainer = () => {
                 <img
                   src={message.image}
                   alt="Attachment"
-                  className="sm:max-w-[200px] rounded-md mb-2" // Display image attachment if present
+                  className="rounded-md mb-2 sm:max-w-[200px]" // Display image attachment if present
                 />
               )}
               {message.text && <p>{message.text}</p>} {/* Display text message */}

@@ -36,8 +36,8 @@ const SignUpPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission
     const success = validateForm(); // Validate the form
-
-    if (success === true) signup(formData); // Proceed with signup function with form data if form is valid
+  //  It calls the signup function from userAuthStore to submit form data if form is valid
+    if (success === true) signup(formData); 
   };
 
   return (

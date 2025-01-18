@@ -23,13 +23,17 @@ const App = () => {
   console.log({ onlineUsers });
 
 
-  // Effect to check if the user is authenticated when the app loads
+// On app load, the `useEffect` hook calls `checkAuth()` to check if the user is authenticated.
+// If the user was logged in before and their token is still valid, they remain signed in when the app reopens.
+// The `checkAuth()` function verifies the login status. If the user is logged in, it shows the homepage; 
+// otherwise, it redirects to the login page.
   useEffect(() => {
     checkAuth(); // Call the `checkAuth` function to verify the user's authentication status
   }, [checkAuth]); // Dependency array ensures checkAuth is only re-run if it changes
 
   console.log({ authUser });// Logs the current authenticated user (for debugging)
-// If the app is still checking authentication and no user is logged in, show a loading spinner
+
+// If the app is still checking authentication and no user is logged in,then show a loading spinner fro better User experience
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -41,6 +45,12 @@ const App = () => {
 
 
 
+  //`useEffect` runs only once on the first load or page refresh beacuse it runs on mount (when the component 
+  // is first added to the DOM), and the dependency array ([checkAuth]) ensures that it only runs again if 
+  // checkAuth itself changes after the initial run. and not 
+  // `authUser`.`authUser` changes (e.g., after login)React triggers a re-render of the`App.jsx`** component.
+  // As useEffect runs only when checkAuth changes.`useEffect` does not run again when `authUser` 
+  // changes; instead, React re-renders the component and decides which page to show (home or login).
   return (
     // Apply the theme from the Zustand store to the entire app using the `data-theme` attribute
     <div data-theme={theme}>
